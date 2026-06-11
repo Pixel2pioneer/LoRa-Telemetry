@@ -1,0 +1,9 @@
+../Core/Src/lora.c:10:6:LoRa_Reset	1
+../Core/Src/lora.c:27:9:LoRa_ReadRegister	1
+../Core/Src/lora.c:55:6:LoRa_WriteRegister	1
+../Core/Src/lora.c:79:6:LoRa_SetFrequency	1
+../Core/Src/lora.c:90:6:LoRa_SetTxPower	2
+../Core/Src/lora.c:100:9:LoRa_Init	2
+../Core/Src/lora.c:137:6:LoRa_Send	3
+../Core/Src/lora.c:170:9:LoRa_Receive	3
+../Core/Src/lora.c:202:9:LoRa_GetRSSI	1
