@@ -20,6 +20,7 @@
 #include "main.h"
 #include "lora.h"
 #include "stdio.h"
+#include "string.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -113,8 +114,21 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  uint8_t buffer[64];
+  uint8_t len;
   LoRa_Reset();
+  if(LoRa_Init(433000000))
+      {
+          printf("LoRa Init OK\r\n");
+      }
+      else
+      {
+          printf("LoRa Init Failed\r\n");
+      }
+
+      LoRa_WriteRegister(
+          REG_OP_MODE,
+          MODE_LONG_RANGE_MODE | 0x05);
 
   HAL_Delay(100);
 
@@ -129,13 +143,15 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-		printf("REG 0x01 = 0x%02X\r\n", LoRa_ReadRegister(0x01));
-		 	    printf("REG 0x06 = 0x%02X\r\n", LoRa_ReadRegister(0x06));
-		 	    printf("REG 0x39 = 0x%02X\r\n", LoRa_ReadRegister(0x39));
-		 	    printf("REG 0x42 = 0x%02X\r\n", LoRa_ReadRegister(0x42)); //SUCCESSFULLY PRINTED REG VALUES
-		 	    printf("--RECEIVER_G491RE--\r\n");
+	  len = LoRa_Receive(buffer);
 
-		 	    HAL_Delay(1000);
+	 	     if(len > 0)
+	 	     {
+	 	         buffer[len] = '\0';
+	 	         printf("Received: %s\r\n", buffer);
+	 	         printf("--RECEIVER_G491RE--\r\n");
+	 	     }
+	 	        HAL_Delay(1000);
 
   }
   /* USER CODE END 3 */

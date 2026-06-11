@@ -167,8 +167,7 @@ void LoRa_Send(uint8_t *data,uint8_t length)
     while((LoRa_ReadRegister(REG_IRQ_FLAGS)
             & IRQ_TX_DONE_MASK)==0);
 
-    printf("TX IRQ = 0x%02X\r\n",
-           LoRa_ReadRegister(REG_IRQ_FLAGS));
+   // printf("TX IRQ = 0x%02X\r\n",LoRa_ReadRegister(REG_IRQ_FLAGS));
 
     LoRa_WriteRegister(
         REG_IRQ_FLAGS,

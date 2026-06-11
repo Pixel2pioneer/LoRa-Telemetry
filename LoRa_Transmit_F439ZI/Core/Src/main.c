@@ -113,6 +113,15 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
    LoRa_Reset();
+   if(LoRa_Init(433000000))
+    {
+        printf("LoRa Init OK\r\n");
+    }
+    else
+    {
+        printf("LoRa Init Failed\r\n");
+    }
+    uint8_t msg[] = "HELLO";
 
    HAL_Delay(100);
   /* USER CODE END 2 */
@@ -125,13 +134,9 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  	  	printf("REG 0x01 = 0x%02X\r\n", LoRa_ReadRegister(0x01));
-	 	    printf("REG 0x06 = 0x%02X\r\n", LoRa_ReadRegister(0x06));
-	 	    printf("REG 0x39 = 0x%02X\r\n", LoRa_ReadRegister(0x39));
-	 	    printf("REG 0x42 = 0x%02X\r\n", LoRa_ReadRegister(0x42)); //SUCCESSFULLY PRINTED REG VALUES
-	 	    printf("--TRANSMITTER_F439ZI--\r\n");
-
-	 	    HAL_Delay(1000);
+	  LoRa_Send(msg, 5);
+	  printf("Packet Sent By Transmitter_F439ZI\r\n"); // to send hello
+	  HAL_Delay(2000);
   }
   /* USER CODE END 3 */
 }
