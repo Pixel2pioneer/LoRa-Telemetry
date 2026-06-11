@@ -111,7 +111,9 @@ int main(void)
   MX_SPI1_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  uint32_t txTime;
+  uint32_t prevTxTime = 0;
+  uint32_t timeDiff;
    LoRa_Reset();
    if(LoRa_Init(433000000))
     {
@@ -121,7 +123,7 @@ int main(void)
     {
         printf("LoRa Init Failed\r\n");
     }
-    uint8_t msg[] = "HELLO";
+
 
    HAL_Delay(100);
   /* USER CODE END 2 */
@@ -134,9 +136,18 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  LoRa_Send(msg, 5);
-	  printf("Packet Sent By Transmitter_F439ZI\r\n"); // to send hello
-	  HAL_Delay(2000);
+	     txTime = HAL_GetTick();
+
+	     timeDiff = txTime - prevTxTime;
+	     prevTxTime = txTime;
+
+	     LoRa_Send((uint8_t *)&txTime, sizeof(txTime));
+
+	     printf("Sent Tick = %lu ms\r\n", txTime);
+	     printf("Time difference between ticks = %lu ms\r\n", timeDiff);
+	     printf("--Transmitter_F439ZI--\r\n");
+
+	     HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
