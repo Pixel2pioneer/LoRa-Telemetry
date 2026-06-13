@@ -20,6 +20,7 @@
 #include "main.h"
 #include "lora.h"
 #include "stdio.h"
+#include "string.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -111,9 +112,10 @@ int main(void)
   MX_SPI1_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  uint32_t txTime;
-  uint32_t prevTxTime = 0;
-  uint32_t timeDiff;
+
+  uint8_t ch;
+  uint8_t rxBuffer[1024];
+  uint16_t index = 0;
    LoRa_Reset();
    if(LoRa_Init(433000000))
     {
@@ -123,7 +125,6 @@ int main(void)
     {
         printf("LoRa Init Failed\r\n");
     }
-
 
    HAL_Delay(100);
   /* USER CODE END 2 */
@@ -136,18 +137,45 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	     txTime = HAL_GetTick();
+	  printf("--Transmitter_F439ZI--\r\n");
 
-	     timeDiff = txTime - prevTxTime;
-	     prevTxTime = txTime;
+	  HAL_UART_Receive(&huart3, &ch, 1, HAL_MAX_DELAY);
 
-	     LoRa_Send((uint8_t *)&txTime, sizeof(txTime));
+	  rxBuffer[index++] = ch;
 
-	     printf("Sent Tick = %lu ms\r\n", txTime);
-	     printf("Time difference between ticks = %lu ms\r\n", timeDiff);
-	     printf("--Transmitter_F439ZI--\r\n");
+	  /* Prevent overflow */
+	  if(index >= sizeof(rxBuffer) - 1)
+	  {
+	      printf("BUFFER FULL!\r\n");
+	      index = 0;
+	      memset(rxBuffer, 0, sizeof(rxBuffer));
+	  }
 
-	     HAL_Delay(1000);
+	  /* End of JSON detected */
+	  if(ch == '}')
+	  {
+	      rxBuffer[index] = '\0';
+
+	      printf("\r\n====================\r\n");
+	      printf("FULL JSON RECEIVED:\r\n");
+	      printf("====================\r\n");
+
+	     /* HAL_UART_Transmit(&huart3,
+	                        rxBuffer,
+	                        index,
+	                        HAL_MAX_DELAY);*/
+	      LoRa_Send(rxBuffer, index);
+
+	      HAL_UART_Transmit(&huart3,
+	                        (uint8_t*)"\r\n",
+	                        2,
+	                        HAL_MAX_DELAY);
+
+	      printf("Bytes Received = %d\r\n", index);
+
+	      index = 0;
+	      memset(rxBuffer, 0, sizeof(rxBuffer));
+	  }
   }
   /* USER CODE END 3 */
 }

@@ -114,12 +114,8 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t buffer[64];
   uint8_t len;
-  uint32_t txTime;
-  uint32_t rxTime;
-  uint32_t prevRxTime = 0;
-  uint32_t rxDiff;
+  uint8_t loraRx[1024];
   LoRa_Reset();
   if(LoRa_Init(433000000))
       {
@@ -147,28 +143,13 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  len = LoRa_Receive(buffer);
+	  len = LoRa_Receive(loraRx);
 
-	     if (len == sizeof(uint32_t))
+	     if (len >0)
 	     {
-	         memcpy(&txTime, buffer, sizeof(uint32_t));
+	    	 loraRx[len] = '\0';
 
-	         rxTime = HAL_GetTick();
-
-	         printf("TX Tick = %lu ms\r\n", txTime);
-	         printf("RX Tick = %lu ms\r\n", rxTime);
-
-	         // Difference between TX and RX timestamps
-	         printf("TX-RX Difference = %lu ms\r\n", rxTime - txTime);
-
-	         // Difference between consecutive RX timestamps
-	         if (prevRxTime != 0)
-	         {
-	             rxDiff = rxTime - prevRxTime;
-	             printf("RX Tick Difference = %lu ms\r\n", rxDiff);
-	         }
-
-	         prevRxTime = rxTime;
+	    	 printf("Received from LoRa:\r\n%s\r\n", loraRx);
 
 	         printf("--RECEIVER_G491RE--\r\n");
 	     }
