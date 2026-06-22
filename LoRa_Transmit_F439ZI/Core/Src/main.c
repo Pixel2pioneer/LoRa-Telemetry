@@ -23,7 +23,7 @@
 #include "string.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+extern UART_HandleTypeDef huart3;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -77,6 +77,15 @@ int __io_putchar(int ch)
 
     return ch;
 }
+typedef struct __attribute__((packed))
+{
+    float latitude;
+    float longitude;
+    float altitude;
+    float batteryVoltage;
+    float batteryCurrent;
+    uint8_t flightMode;
+} Telemetry_t;
 
 /* USER CODE END 0 */
 
@@ -112,10 +121,7 @@ int main(void)
   MX_SPI1_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-
-  uint8_t ch;
-  uint8_t rxBuffer[1024];
-  uint16_t index = 0;
+   Telemetry_t txData;
    LoRa_Reset();
    if(LoRa_Init(433000000))
     {
@@ -136,46 +142,32 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-	  printf("--Transmitter_F439ZI--\r\n");
-
-	  HAL_UART_Receive(&huart3, &ch, 1, HAL_MAX_DELAY);
-
-	  rxBuffer[index++] = ch;
-
-	  /* Prevent overflow */
-	  if(index >= sizeof(rxBuffer) - 1)
+	  while(1)
 	  {
-	      printf("BUFFER FULL!\r\n");
-	      index = 0;
-	      memset(rxBuffer, 0, sizeof(rxBuffer));
+	      txData.latitude = 21.1702f;
+	      txData.longitude = 72.8311f;
+	      txData.altitude = 120.5f;
+	      txData.batteryVoltage = 11.8f;
+	      txData.batteryCurrent = 2.3f;
+	      txData.flightMode = 1;
+
+	      printf("\r\n----- TRANSMITTER_F439ZI -----\r\n");
+	      printf("Latitude        = %.4f\r\n", txData.latitude);
+	      printf("Longitude       = %.4f\r\n", txData.longitude);
+	      printf("Altitude        = %.2f m\r\n", txData.altitude);
+	      printf("Battery Voltage = %.2f V\r\n", txData.batteryVoltage);
+	      printf("Battery Current = %.2f A\r\n", txData.batteryCurrent);
+	      printf("Flight Mode     = %d\r\n", txData.flightMode);
+	      printf("Packet Size     = %u bytes\r\n",(unsigned int)sizeof(Telemetry_t));
+
+	      LoRa_Send((uint8_t *)&txData, sizeof(Telemetry_t));
+
+	      printf("LoRa Packet Sent\r\n");
+
+	      HAL_Delay(1000);
 	  }
 
-	  /* End of JSON detected */
-	  if(ch == '}')
-	  {
-	      rxBuffer[index] = '\0';
 
-	      printf("\r\n====================\r\n");
-	      printf("FULL JSON RECEIVED:\r\n");
-	      printf("====================\r\n");
-
-	     /* HAL_UART_Transmit(&huart3,
-	                        rxBuffer,
-	                        index,
-	                        HAL_MAX_DELAY);*/
-	      LoRa_Send(rxBuffer, index);
-
-	      HAL_UART_Transmit(&huart3,
-	                        (uint8_t*)"\r\n",
-	                        2,
-	                        HAL_MAX_DELAY);
-
-	      printf("Bytes Received = %d\r\n", index);
-
-	      index = 0;
-	      memset(rxBuffer, 0, sizeof(rxBuffer));
-	  }
   }
   /* USER CODE END 3 */
 }

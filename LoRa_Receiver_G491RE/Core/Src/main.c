@@ -78,6 +78,15 @@ int __io_putchar(int ch)
 
     return ch;
 }
+typedef struct __attribute__((packed))
+{
+    float latitude;
+    float longitude;
+    float altitude;
+    float batteryVoltage;
+    float batteryCurrent;
+    uint8_t flightMode;
+} Telemetry_t;
 
 
 /* USER CODE END 0 */
@@ -114,8 +123,8 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t len;
-  uint8_t loraRx[1024];
+  uint8_t buffer[24];
+  Telemetry_t rxData;
   LoRa_Reset();
   if(LoRa_Init(433000000))
       {
@@ -143,17 +152,34 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  len = LoRa_Receive(loraRx);
+	  int len = LoRa_Receive(buffer);
 
-	     if (len >0)
-	     {
-	    	 loraRx[len] = '\0';
+	  if(len > 0)
+	  {
+	      printf("\r\n----- RECEIVER_G491RE -----\r\n");
+	      printf("Received Length = %d bytes\r\n", len);
 
-	    	 printf("Received from LoRa:\r\n%s\r\n", loraRx);
+	      if(len == sizeof(Telemetry_t))
+	      {
+	          memcpy(&rxData, buffer, sizeof(Telemetry_t));
 
-	         printf("--RECEIVER_G491RE--\r\n");
-	     }
+	          printf("Latitude        = %.4f\r\n", rxData.latitude);
+	          printf("Longitude       = %.4f\r\n", rxData.longitude);
+	          printf("Altitude        = %.2f m\r\n", rxData.altitude);
+	          printf("Battery Voltage = %.2f V\r\n", rxData.batteryVoltage);
+	          printf("Battery Current = %.2f A\r\n", rxData.batteryCurrent);
+	          printf("Flight Mode     = %d\r\n", rxData.flightMode);
+	      }
+	      else
+	      {
+	          printf("Packet Size Mismatch!\r\n");
+	          printf("Expected = %u bytes\r\n",
+	                 (unsigned int)sizeof(Telemetry_t));
+	          printf("Received = %d bytes\r\n", len);
+	      }
 
+	      printf("---------------------------\r\n");
+	  }
 
   }
   /* USER CODE END 3 */
